@@ -16,9 +16,25 @@
   "require": {
     "php": "^8.4"
   },
+  "require-dev": {
+    "phpunit/phpunit": "^10.5",
+  },
   "autoload": {
     "psr-4": {
       "Bermuda\\Stdlib\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Bermuda\\Stdlib\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit"
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true,
+  "config": {
+    "sort-packages": true
+  }
 }
