@@ -746,58 +746,161 @@ final class Duration implements \Stringable, \JsonSerializable
     }
     
     /**
-     * Checks if this duration equals another duration
+     * Checks if this duration equals another duration or at least one duration in an array
      * 
-     * @param Duration $other The other duration
-     * @return bool True if the durations are equal, false otherwise
+     * @param Duration|array<Duration> $other One or more Duration objects to compare against
+     * @return bool True if the durations match, false otherwise
      */
-    public function equals(Duration $other): bool
+    public function equals(Duration|array $other): bool
     {
-        return $this->seconds === $other->seconds;
+        if ($other instanceof Duration) {
+            return $this->seconds === $other->seconds;
+        }
+        
+        foreach ($other as $duration) {
+            if (!$duration instanceof Duration) {
+                throw new \InvalidArgumentException('Array must contain only Duration objects');
+            }
+            
+            if ($this->seconds === $duration->seconds) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     /**
-     * Checks if this duration is less than another duration
+     * Checks if this duration is less than another duration or all durations in an array
      * 
-     * @param Duration $other The other duration
-     * @return bool True if this duration is less than the other, false otherwise
+     * @param Duration|array<Duration> $other One or more Duration objects to compare against
+     * @return bool True if this duration is less than the other(s), false otherwise
      */
-    public function lessThan(Duration $other): bool
+    public function lessThan(Duration|array $other): bool
     {
-        return $this->seconds < $other->seconds;
+        if ($other instanceof Duration) {
+            return $this->seconds < $other->seconds;
+        }
+        
+        if (empty($other)) {
+            return false;
+        }
+        
+        foreach ($other as $duration) {
+            if (!$duration instanceof Duration) {
+                throw new \InvalidArgumentException('Array must contain only Duration objects');
+            }
+            
+            if ($this->seconds >= $duration->seconds) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     /**
-     * Checks if this duration is less than or equal to another duration
+     * Checks if this duration is less than or equal to another duration or all durations in an array
      * 
-     * @param Duration $other The other duration
-     * @return bool True if this duration is less than or equal to the other, false otherwise
+     * @param Duration|array<Duration> $other One or more Duration objects to compare against
+     * @return bool True if this duration is less than or equal to the other(s), false otherwise
      */
-    public function lessThanOrEqual(Duration $other): bool
+    public function lessThanOrEqual(Duration|array $other): bool
     {
-        return $this->seconds <= $other->seconds;
+        if ($other instanceof Duration) {
+            return $this->seconds <= $other->seconds;
+        }
+        
+        if (empty($other)) {
+            return false;
+        }
+        
+        foreach ($other as $duration) {
+            if (!$duration instanceof Duration) {
+                throw new \InvalidArgumentException('Array must contain only Duration objects');
+            }
+            
+            if ($this->seconds > $duration->seconds) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     /**
-     * Checks if this duration is greater than another duration
+     * Checks if this duration is greater than another duration or all durations in an array
      * 
-     * @param Duration $other The other duration
-     * @return bool True if this duration is greater than the other, false otherwise
+     * @param Duration|array<Duration> $other One or more Duration objects to compare against
+     * @return bool True if this duration is greater than the other(s), false otherwise
      */
-    public function greaterThan(Duration $other): bool
+    public function greaterThan(Duration|array $other): bool
     {
-        return $this->seconds > $other->seconds;
+        if ($other instanceof Duration) {
+            return $this->seconds > $other->seconds;
+        }
+        
+        if (empty($other)) {
+            return false;
+        }
+        
+        foreach ($other as $duration) {
+            if (!$duration instanceof Duration) {
+                throw new \InvalidArgumentException('Array must contain only Duration objects');
+            }
+            
+            if ($this->seconds <= $duration->seconds) {
+                return false;
+            }
+        }
+        
+        return true;
     }
     
     /**
-     * Checks if this duration is greater than or equal to another duration
+     * Checks if this duration is greater than or equal to another duration or all durations in an array
      * 
-     * @param Duration $other The other duration
-     * @return bool True if this duration is greater than or equal to the other, false otherwise
+     * @param Duration|array<Duration> $other One or more Duration objects to compare against
+     * @return bool True if this duration is greater than or equal to the other(s), false otherwise
      */
-    public function greaterThanOrEqual(Duration $other): bool
+    public function greaterThanOrEqual(Duration|array $other): bool
     {
-        return $this->seconds >= $other->seconds;
+        if ($other instanceof Duration) {
+            return $this->seconds >= $other->seconds;
+        }
+        
+        if (empty($other)) {
+            return false;
+        }
+        
+        foreach ($other as $duration) {
+            if (!$duration instanceof Duration) {
+                throw new \InvalidArgumentException('Array must contain only Duration objects');
+            }
+            
+            if ($this->seconds < $duration->seconds) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+    
+    /**
+     * Checks if this duration is between two durations (inclusive)
+     * 
+     * @param Duration $min The minimum duration
+     * @param Duration $max The maximum duration
+     * @param bool $inclusive Whether the comparison should be inclusive (default: true)
+     * @return bool True if this duration is between min and max, false otherwise
+     */
+    public function between(Duration $min, Duration $max, bool $inclusive = true): bool
+    {
+        if ($inclusive) {
+            return $this->seconds >= $min->seconds && $this->seconds <= $max->seconds;
+        } else {
+            return $this->seconds > $min->seconds && $this->seconds < $max->seconds;
+        }
     }
     
     /**
