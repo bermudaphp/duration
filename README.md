@@ -13,7 +13,7 @@ An immutable PHP class for handling time durations with ISO 8601 support for PHP
 - **Computed Properties**: Dynamically calculated time components (years, months, days, etc.)
 - **Time Unit Conversion**: Convert between different time units
 - **Arithmetic Operations**: Add, subtract, multiply, and divide durations
-- **Comparison Operations**: Compare durations with methods like equals(), lessThan(), greaterThan()
+- **Flexible Comparison**: Compare durations with single instances or arrays of durations
 - **Flexible Formatting**: Format durations as ISO 8601 strings or custom formats
 - **PHP 8.4 Features**: Leverages computed properties and other PHP 8.4 features
 
@@ -83,7 +83,7 @@ $hours = $duration->hours;         // 4
 $minutes = $duration->minutes;     // 5
 $seconds = $duration->remainingSeconds; // 6
 
-// Get components as an array
+// Get components as an array (only non-zero values)
 $components = $duration->toArray();
 // ['years' => 1, 'months' => 2, 'days' => 3, 'hours' => 4, 'minutes' => 5, 'seconds' => 6]
 ```
@@ -130,6 +130,13 @@ try {
 // Safe subtraction (returns zero duration if result would be negative)
 $diff = $duration->subtract(Duration::fromHours(2));  // Returns zero duration
 
+// Strict subtraction (throws exception if result would be negative)
+try {
+    $strictDiff = $duration->strictSubtract(Duration::fromHours(2));  // Throws exception
+} catch (\InvalidArgumentException $e) {
+    // Handle exception
+}
+
 // Multiplication and division
 $doubled = $duration->multiply(2);
 $halved = $duration->divide(2);
@@ -138,20 +145,32 @@ $halved = $duration->divide(2);
 ### Comparing Durations
 
 ```php
-$duration1 = Duration::fromHours(1);
-$duration2 = Duration::fromMinutes(30);
-$duration3 = Duration::fromHours(1);
+$duration = Duration::fromHours(2);
+$shorter = Duration::fromHours(1);
+$longer = Duration::fromHours(3);
+$equal = Duration::fromHours(2);
 
-$duration1->equals($duration3);           // true
-$duration1->equals($duration2);           // false
+// Compare with a single duration
+$duration->equals($equal);              // true
+$duration->lessThan($longer);           // true
+$duration->greaterThan($shorter);       // true
+$duration->lessThanOrEqual($equal);     // true
+$duration->greaterThanOrEqual($equal);  // true
 
-$duration1->greaterThan($duration2);      // true
-$duration2->lessThan($duration1);         // true
+// Compare with an array of durations
+$duration->equals([$shorter, $equal, $longer]);  // true (equals at least one in the array)
+$duration->lessThan([$longer, Duration::fromHours(4)]);  // true (less than all in array)
+$duration->greaterThan([$shorter, Duration::fromMinutes(30)]);  // true (greater than all in array)
 
-$duration1->greaterThanOrEqual($duration3); // true
-$duration2->lessThanOrEqual($duration1);    // true
+// Check if duration is between two values
+$duration->between($shorter, $longer);       // true (inclusive by default)
+$duration->between($shorter, $equal, true);  // true (inclusive)
+$duration->between($shorter, $equal, false); // false (exclusive)
 
-$compareResult = $duration1->compareTo($duration2); // positive value
+// Compare using compareTo (returns int)
+$compareResult = $duration->compareTo($shorter);  // positive value (greater than)
+$compareResult = $duration->compareTo($equal);    // 0 (equal)
+$compareResult = $duration->compareTo($longer);   // negative value (less than)
 ```
 
 ### Formatting Durations
@@ -174,6 +193,10 @@ $interval = $duration->toDateInterval();
 
 // String conversion (uses ISO 8601)
 $string = (string)$duration;  // "P1Y2M3DT4H5M6S"
+
+// JSON serialization
+$json = json_encode($duration);
+// {"seconds":36993906,"iso8601":"P1Y2M3DT4H5M6S","components":{"years":1,"months":2,"days":3,"hours":4,"minutes":5,"seconds":6}}
 ```
 
 ## Immutability
@@ -186,6 +209,27 @@ $newDuration = $duration->addMinutes(30);
 
 echo $duration->toHumanReadable();   // "01:00:00"
 echo $newDuration->toHumanReadable(); // "01:30:00"
+```
+
+## Exception Handling
+
+Methods that could result in invalid durations throw exceptions:
+
+```php
+// Division by zero
+try {
+    $duration->divide(0);  // Throws InvalidArgumentException
+} catch (\InvalidArgumentException $e) {
+    // Handle division by zero
+}
+
+// Negative duration in strict operations
+try {
+    $duration = Duration::fromHours(1);
+    $duration->subtractHours(2);  // Throws InvalidArgumentException
+} catch (\InvalidArgumentException $e) {
+    // Handle negative duration error
+}
 ```
 
 ## ISO 8601 Duration Format
