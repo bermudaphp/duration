@@ -1,0 +1,24 @@
+{
+  "name": "bermudaphp/duration",
+  "description": "An immutable PHP library for handling time durations with ISO 8601 support",
+  "license": "MIT",
+  "type": "library",
+  "keywords": [
+    "php",
+    "php84",
+    "duration",
+    "iso8601",
+    "iso8601-duration",
+    "immutable",
+    "value-object",
+    "duration-parser"
+  ],
+  "require": {
+    "php": "^8.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "Bermuda\\Stdlib\\": "src/"
+    }
+  },
+}
