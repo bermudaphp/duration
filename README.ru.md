@@ -43,7 +43,7 @@
 ## Установка
 
 ```bash
-composer require bermuda/stdlib
+composer require bermudaphp/duration
 ```
 
 ## Основное использование
